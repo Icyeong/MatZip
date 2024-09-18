@@ -1,16 +1,13 @@
 import {NavigationContainer} from '@react-navigation/native';
 import React from 'react';
-import AuthStackNavigator from './src/navigation/AuthStackNavigator';
+import RootNavigator from './src/navigations/root/RootNavigator';
 
 function App(): JSX.Element {
   return (
     <NavigationContainer>
-      <AuthStackNavigator />
+      <RootNavigator />
     </NavigationContainer>
   );
 }
-
-// const styles = StyleSheet.create({
-// });
 
 export default App;
