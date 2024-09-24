@@ -13,6 +13,8 @@ const postSignup = async ({email, password}: RequestUser): Promise<void> => {
     password,
   });
 
+  console.log('postSignup data : ', data);
+
   return data;
 };
 
@@ -36,12 +38,12 @@ const postLogin = async ({
 type ResponseProfile = Profile & Category;
 
 const getProfile = async (): Promise<ResponseProfile> => {
-  const {data} = await axiosInstance.get('/about/me');
+  const {data} = await axiosInstance.get('/auth/me');
 
   return data;
 };
 
-const getAceessToken = async (): Promise<ResponseToken> => {
+const getAccessToken = async (): Promise<ResponseToken> => {
   const refreshToken = await getEncryptStorage('refreshToken');
 
   const {data} = await axiosInstance.get('/auth/refresh', {
@@ -55,5 +57,5 @@ const logout = async () => {
   await axiosInstance.post('/auth/logout');
 };
 
-export {postSignup, postLogin, getProfile, getAceessToken, logout};
+export {postSignup, postLogin, getProfile, getAccessToken, logout};
 export type {RequestUser, ResponseToken, ResponseProfile};
