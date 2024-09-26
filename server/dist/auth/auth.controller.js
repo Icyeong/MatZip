@@ -70,7 +70,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signin", null);
 __decorate([
-    (0, common_1.Post)('/refresh'),
+    (0, common_1.Get)('/refresh'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)()),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __metadata("design:type", Function),
