@@ -1,3 +1,4 @@
+import { Post } from 'src/post/post.entity';
 import {
   BaseEntity,
   Column,
@@ -8,8 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { Post } from 'src/post/post.entity';
 
 @Entity()
 export class Image extends BaseEntity {

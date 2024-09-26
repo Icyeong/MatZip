@@ -5,44 +5,34 @@ import {
   Get,
   Patch,
   Post,
-  Query,
-  SetMetadata,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-
 import { AuthService } from './auth.service';
+import { AuthDto } from './dto/auth.dto';
 import { User } from './user.entity';
-import { AuthCredentialsDto } from './dto/auth-credential.dto';
+import { GetUser } from 'src/@common/decorators/get-user.decorator';
+import { AuthGuard } from '@nestjs/passport';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { MarkerColor } from 'src/post/marker-color.enum';
-import { GetUser } from 'src/@common/decorators/get-user.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/signup')
-  signup(
-    @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
-  ): Promise<void> {
-    return this.authService.signup(authCredentialsDto);
+  signup(@Body(ValidationPipe) authDto: AuthDto) {
+    return this.authService.signup(authDto);
   }
 
   @Post('/signin')
-  signin(
-    @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    return this.authService.signin(authCredentialsDto);
+  signin(@Body(ValidationPipe) authDto: AuthDto) {
+    return this.authService.signin(authDto);
   }
 
   @Get('/refresh')
   @UseGuards(AuthGuard())
-  refresh(@GetUser() user: User): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  refresh(@GetUser() user: User) {
     return this.authService.refreshToken(user);
   }
 
@@ -61,7 +51,7 @@ export class AuthController {
   @Post('/logout')
   @UseGuards(AuthGuard())
   logout(@GetUser() user: User) {
-    return this.authService.deleteRefreshToken(user.id);
+    return this.authService.deleteRefreshToken(user);
   }
 
   @Delete('/me')

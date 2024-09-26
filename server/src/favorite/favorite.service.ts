@@ -1,8 +1,7 @@
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable } from '@nestjs/common';
-
+import { InjectRepository } from '@nestjs/typeorm';
 import { Favorite } from './favorite.entity';
+import { Repository } from 'typeorm';
 import { User } from 'src/auth/user.entity';
 
 @Injectable()
@@ -27,14 +26,14 @@ export class FavoriteService {
 
     const newPosts = favorites.map((favorite) => {
       const post = favorite.post;
-      const images = [...post.images].sort((a, b) => a.id - b.id);
+      const images = [...post.images].sort((a, b) => (a.id = b.id));
       return { ...post, images };
     });
 
     return newPosts;
   }
 
-  async toggleFavorite(postId: number, user: User): Promise<number> {
+  async toggleFavorite(postId: number, user: User) {
     if (!postId) {
       throw new BadRequestException('존재하지 않는 피드입니다.');
     }

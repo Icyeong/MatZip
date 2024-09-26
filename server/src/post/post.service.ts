@@ -3,11 +3,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
-
 import { CreatePostDto } from './dto/create-post.dto';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './post.entity';
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { User } from 'src/auth/user.entity';
 import { Image } from 'src/image/image.entity';
 
@@ -20,7 +19,7 @@ export class PostService {
     private imageRepository: Repository<Image>,
   ) {}
 
-  async getMyMarkers(user: User) {
+  async getAllMarkers(user: User) {
     try {
       const markers = await this.postRepository
         .createQueryBuilder('post')
@@ -43,6 +42,14 @@ export class PostService {
     }
   }
 
+  private getPostsWithOrderImages(posts: Post[]) {
+    return posts.map((post) => {
+      const { images, ...rest } = post;
+      const newImages = [...images].sort((a, b) => a.id - b.id);
+      return { ...rest, images: newImages };
+    });
+  }
+
   private async getPostsBaseQuery(
     userId: number,
   ): Promise<SelectQueryBuilder<Post>> {
@@ -53,41 +60,11 @@ export class PostService {
       .orderBy('post.date', 'DESC');
   }
 
-  private getPostsWithOrderImages(posts: Post[]) {
-    return posts.map((post) => {
-      const { images, ...rest } = post;
-      const newImages = [...images].sort((a, b) => a.id - b.id);
-      return { ...rest, images: newImages };
-    });
-  }
-
   async getMyPosts(page: number, user: User) {
     const perPage = 10;
     const offset = (page - 1) * perPage;
     const queryBuilder = await this.getPostsBaseQuery(user.id);
     const posts = await queryBuilder.take(perPage).skip(offset).getMany();
-
-    return this.getPostsWithOrderImages(posts);
-  }
-
-  async searchMyPostsByTitleAndAddress(
-    query: string,
-    page: number,
-    user: User,
-  ) {
-    const perPage = 10;
-    const offset = (page - 1) * perPage;
-    const queryBuilder = await this.getPostsBaseQuery(user.id);
-    const posts = await queryBuilder
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('post.title like :query', { query: `%${query}%` });
-          qb.orWhere('post.address like :query', { query: `%${query}%` });
-        }),
-      )
-      .skip(offset)
-      .take(perPage)
-      .getMany();
 
     return this.getPostsWithOrderImages(posts);
   }
@@ -112,13 +89,13 @@ export class PostService {
       }
 
       const { favorites, ...rest } = foundPost;
-      const postWithIsFavorite = { ...rest, isFavorite: favorites.length > 0 };
+      const postWithIsFavorites = { ...rest, isFavorite: favorites.length > 0 };
 
-      return postWithIsFavorite;
+      return postWithIsFavorites;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(
-        '장소 정보를 가져오는 도중 에러가 발생했습니다.',
+        '장소를 가져오는 도중 에러가 발생했습니다.',
       );
     }
   }
@@ -164,7 +141,7 @@ export class PostService {
     return postWithoutUser;
   }
 
-  async deletePost(id: number, user: User): Promise<number> {
+  async deletePost(id: number, user: User) {
     try {
       const result = await this.postRepository
         .createQueryBuilder('post')
@@ -182,7 +159,7 @@ export class PostService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(
-        '게시물을 삭제하는 도중 에러가 발생했습니다.',
+        '장소를 삭제하는 도중 에러가 발생했습니다.',
       );
     }
   }
@@ -209,7 +186,7 @@ export class PostService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(
-        '게시물을 수정하는 도중 에러가 발생했습니다.',
+        '장소를 수정하는 도중 에러가 발생했습니다.',
       );
     }
 
@@ -244,21 +221,25 @@ export class PostService {
     return groupPostsByDate;
   }
 
-  async getPostCountByField(user: User, field: string) {
-    const counts = await this.postRepository
-      .createQueryBuilder('post')
-      .where('post.userId = :userId', { userId: user.id })
-      .select(`post.${field}`, `${field}`)
-      .addSelect('COUNT(post.id)', 'count')
-      .groupBy(`post.${field}`)
-      .getRawMany()
-      .then((result) =>
-        result.map((post) => ({
-          field: post[field],
-          count: Number(post.count),
-        })),
-      );
+  async searchMyPostsByTitleAndAddress(
+    query: string,
+    page: number,
+    user: User,
+  ) {
+    const perPage = 10;
+    const offset = (page - 1) * perPage;
+    const queryBuilder = await this.getPostsBaseQuery(user.id);
+    const posts = await queryBuilder
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('post.title like :query', { query: `%${query}%` });
+          qb.orWhere('post.address like :query', { query: `%${query}%` });
+        }),
+      )
+      .skip(offset)
+      .take(perPage)
+      .getMany();
 
-    return counts;
+    return this.getPostsWithOrderImages(posts);
   }
 }

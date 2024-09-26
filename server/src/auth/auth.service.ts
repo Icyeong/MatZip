@@ -9,14 +9,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
-
 import { User } from './user.entity';
-import { AuthCredentialsDto } from './dto/auth-credential.dto';
+import { AuthDto } from './dto/auth.dto';
+import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { MarkerColor } from 'src/post/marker-color.enum';
 
@@ -29,8 +28,8 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async signup(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const { email, password } = authCredentialsDto;
+  async signup(authDto: AuthDto) {
+    const { email, password } = authDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -44,7 +43,6 @@ export class AuthService {
       await this.userRepository.save(user);
     } catch (error) {
       console.log(error);
-
       if (error.code === '23505') {
         throw new ConflictException('이미 존재하는 이메일입니다.');
       }
@@ -55,10 +53,23 @@ export class AuthService {
     }
   }
 
-  async signin(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const { email, password } = authCredentialsDto;
+  private async getTokens(payload: { email: string }) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION'),
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION'),
+      }),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  async signin(authDto: AuthDto) {
+    const { email, password } = authDto;
     const user = await this.userRepository.findOneBy({ email });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -73,10 +84,19 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(user: User): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  private async updateHashedRefreshToken(id: number, refreshToken: string) {
+    const salt = await bcrypt.genSalt();
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+
+    try {
+      await this.userRepository.update(id, { hashedRefreshToken });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async refreshToken(user: User) {
     const { email } = user;
     const { accessToken, refreshToken } = await this.getTokens({ email });
 
@@ -117,53 +137,18 @@ export class AuthService {
         '프로필 수정 도중 에러가 발생했습니다.',
       );
     }
-
-    const { password, hashedRefreshToken, ...rest } = profile;
-
-    return { ...rest };
   }
 
-  async deleteRefreshToken(id: number) {
+  async deleteRefreshToken(user: User) {
     try {
-      await this.userRepository.update(id, { hashedRefreshToken: null });
+      await this.userRepository.update(user.id, { hashedRefreshToken: null });
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException();
     }
   }
 
-  private async updateHashedRefreshToken(id: number, refreshToken: string) {
-    const salt = await bcrypt.genSalt();
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
-
-    try {
-      await this.userRepository.update(id, { hashedRefreshToken });
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
-    }
-  }
-
-  private async getTokens(payload: { email: string }) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<string>(
-          'JWT_ACCRESS_TOKEN_EXPIRATION',
-        ),
-      }),
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<string>(
-          'JWT_REFRESH_TOKEN_EXPIRATION',
-        ),
-      }),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
-
-  async deleteAccount(user: User): Promise<void> {
+  async deleteAccount(user: User) {
     try {
       await this.userRepository
         .createQueryBuilder('user')
@@ -224,8 +209,8 @@ export class AuthService {
       const response = await axios.get(url, { headers });
       const userData = response.data;
       const { id: kakaoId, kakao_account } = userData;
-      const nickname = kakao_account.profile.nickname;
-      const imageUri = kakao_account.profile.thumbnail_image_url?.replace(
+      const nickname = kakao_account?.profile.nickname;
+      const imageUri = kakao_account?.profile.thumbnail_image_url?.replace(
         /^http:/,
         'https:',
       );

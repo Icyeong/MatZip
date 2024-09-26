@@ -1,3 +1,5 @@
+import { User } from 'src/auth/user.entity';
+import { Post } from 'src/post/post.entity';
 import {
   BaseEntity,
   Column,
@@ -10,15 +12,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { User } from 'src/auth/user.entity';
-import { Post } from 'src/post/post.entity';
-
 @Entity()
 export class Favorite extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
+  @Column()
   postId: number;
 
   @Column()
