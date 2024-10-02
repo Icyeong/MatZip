@@ -1,11 +1,13 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 
 function FeedHomeScreen() {
   return (
-    <View>
-      <Text>Feed</Text>
-    </View>
+    <SafeAreaView>
+      <View>
+        <Text>Feed</Text>
+      </View>
+    </SafeAreaView>
   );
 }
 

@@ -13,8 +13,6 @@ const postSignup = async ({email, password}: RequestUser): Promise<void> => {
     password,
   });
 
-  console.log('postSignup data : ', data);
-
   return data;
 };
 

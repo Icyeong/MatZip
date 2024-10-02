@@ -429,6 +429,8 @@ PODS:
   - RNGestureHandler (2.20.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
+  - RNPermissions (4.1.5):
+    - React-Core
   - RNReanimated (3.3.0):
     - DoubleConversion
     - FBLazyVector
@@ -509,6 +511,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -516,8 +519,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - fmt
-    - Google-Maps-iOS-Utils
-    - GoogleMaps
     - Google-Maps-iOS-Utils
     - GoogleMaps
     - SocketRocket
@@ -611,6 +612,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-masked-view/masked-view"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -666,11 +669,12 @@ SPEC CHECKSUMS:
   ReactCommon: 5f73972d2abd8a85e44f27317bf77418a74d3340
   RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
   RNGestureHandler: 74c531dc20aa37fb3a8d3d8514447a0d129ddb7d
+  RNPermissions: b792220f140e16653edaa8d8f01f81e98f39ef47
   RNReanimated: 3ffa3d63576ecd26a4f8772d03029cccaf41b5d7
   RNScreens: 80369e822c4f123c3f076c9ea4141991c17770f9
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: b76f1acfda8212aa16b7e26bcce3983230c82603
 
-PODFILE CHECKSUM: 76374da28e49db56f01d2d42cacda1eb8d54318e
+PODFILE CHECKSUM: e9a250834693450d6e76b915944da06c37d0530d
 
 COCOAPODS: 1.15.2
