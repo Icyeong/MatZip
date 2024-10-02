@@ -11,6 +11,8 @@ import {MainDrawerParamList} from '../../navigations/drawer/MainDrawerNavigator'
 import {DrawerNavigationProp} from '@react-navigation/drawer';
 import useUserLocation from '@/hooks/useUserLocation';
 import usePermission from '@/hooks/usePermisson';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 type Navigation = CompositeNavigationProp<
   StackNavigationProp<MapStackParamList>,
@@ -54,11 +56,11 @@ export default function MapHomeScreen() {
       <Pressable
         style={[styles.drawerButton, {top: inset.top || 20}]}
         onPress={() => navigation.openDrawer()}>
-        <Text>서랍</Text>
+        <Ionicons name="menu" color={colors.WHITE} size={25} />
       </Pressable>
       <View style={styles.buttonList}>
         <Pressable style={styles.mapButton} onPress={handlePressUserLocation}>
-          <Text>내위치</Text>
+          <MaterialIcons name="my-location" color={colors.WHITE} size={25} />
         </Pressable>
       </View>
     </>
